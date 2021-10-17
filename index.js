@@ -17,6 +17,11 @@ const gameoverElement = document.getElementById("gameover");
 /** @type {HTMLElement} */
 const welcomeElement = document.getElementById("welcome");
 
+/** @type {HTMLAudioElement} */
+const popAudio = new Audio('assets/sounds/pop.mp3');
+/** @type {HTMLAudioElement} */
+const gameoverAudio = new Audio('assets/sounds/gameover.mp3');
+
 /** @type {boolean} */
 let gameStarted = false;
 
@@ -114,6 +119,7 @@ window.addEventListener('click', () => {
       if (scoreElement) scoreElement.innerText = stack.length - 1;
 
       addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
+      popAudio.play();
     } else {
       missedTheSpot();
     }
@@ -171,6 +177,7 @@ function missedTheSpot() {
 
   gameStarted = false;
   if (gameoverElement) gameoverElement.style.display = "flex";
+  gameoverAudio.play();
 }
 
 function animation() {
