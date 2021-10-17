@@ -17,6 +17,11 @@ const gameoverElement = document.getElementById("gameover");
 /** @type {HTMLElement} */
 const welcomeElement = document.getElementById("welcome");
 
+/** @type {HTMLElement} */
+const highScoreElement = document.getElementById("high-score-number");
+/** @type {string} */
+const highScore = localStorage.getItem("highScore");
+
 /** @type {HTMLAudioElement} */
 const popAudio = new Audio('assets/sounds/pop.mp3');
 /** @type {HTMLAudioElement} */
@@ -67,8 +72,27 @@ let gameStarted = false;
   renderer.setAnimationLoop(animation);
   renderer.render(scene, camera);
   document.body.appendChild(renderer.domElement);
+  displayHighScore();
 })();
 
+function displayHighScore() {
+  if (highScoreElement) {
+    if (highScore === null) {
+      console.log("highscore is: " + highScore);
+      highScoreElement.innerText = 0;
+    } else {
+      highScoreElement.innerText = highScore;
+    }
+  }
+}
+
+function setHighScore() {
+  const score = stack.length - 2;
+  if (highScore < score) {
+    highScoreElement.innerText = score;
+    localStorage.setItem("highScore", JSON.stringify(score)); 
+  }
+}
 
 window.addEventListener('click', () => {
   if (!gameStarted) {
@@ -178,6 +202,8 @@ function missedTheSpot() {
   gameStarted = false;
   if (gameoverElement) gameoverElement.style.display = "flex";
   gameoverAudio.play();
+
+  setHighScore();
 }
 
 function animation() {

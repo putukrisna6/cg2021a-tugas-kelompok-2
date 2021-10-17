@@ -41,11 +41,19 @@ body:hover #welcome {
   border-radius: 20px;
 }
 
-#score {
+#score,
+#high-score {
   position: absolute;
   color: white;
-  font-size: 3em;
+  font-size: 2em;
   font-weight: bold;
   top: 30px;
+}
+
+#high-score {
+  left: 30px;
+}
+
+#score {
   right: 30px;
 }
