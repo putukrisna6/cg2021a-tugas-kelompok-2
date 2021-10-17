@@ -9,6 +9,13 @@ let world;
 
 /** @type {number} */
 const originalBoxSize = 3;
+/** @type {HTMLElement} */
+const scoreElement = document.getElementById("score");
+/** @type {HTMLElement} */
+const resultsElement = document.getElementById("results");
+
+/** @type {boolean} */
+let gameStarted = false;
 
 (function init() {
   // set up cannon.js
@@ -49,16 +56,15 @@ const originalBoxSize = 3;
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setAnimationLoop(animation);
   renderer.render(scene, camera);
   document.body.appendChild(renderer.domElement);
 })();
 
-let gameStarted = false;
+
 window.addEventListener('click', () => {
   if (!gameStarted) {
-    console.log('start');
-    renderer.setAnimationLoop(animation);
-    gameStarted = true;
+    startGame();
   } else {
     // Add new box on top
     const topLayer = stack[stack.length - 1];
@@ -102,15 +108,72 @@ window.addEventListener('click', () => {
       const newDepth = topLayer.depth;
       const nextDirection = (direction === 'x') ? 'z' : 'x';
 
+      if (scoreElement) scoreElement.innerText = stack.length - 1;
+
       addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
+    } else {
+      missedTheSpot();
     }
   }
 });
+
+function startGame() {
+  stack = [];
+  overhangs = [];
+  gameStarted = true;
+
+  if (scoreElement) scoreElement.innerText = 0;
+  if (resultsElement) resultsElement.style.display = "none";
+
+  if (world) {
+    // Remove every object from world
+    while (world.bodies.length > 0) {
+      world.remove(world.bodies[0]);
+    }
+  }
+
+  if (scene) {
+    // Remove every Mesh from the scene
+    while (scene.children.find((c) => c.type == "Mesh")) {
+      const mesh = scene.children.find((c) => c.type == "Mesh");
+      scene.remove(mesh);
+    }
+
+    // Foundation
+    addLayer(0, 0, originalBoxSize, originalBoxSize);
+
+    // First layer
+    addLayer(-10, 0, originalBoxSize, originalBoxSize, "x");
+  }
+
+  if (camera) {
+    // Reset camera positions
+    camera.position.set(4, 4, 4);
+    camera.lookAt(0, 0, 0);
+  }
+}
+
+function missedTheSpot() {
+  const topLayer = stack[stack.length - 1];
+
+  addOverhang(
+    topLayer.threejs.position.x,
+    topLayer.threejs.position.z,
+    topLayer.width,
+    topLayer.depth
+  );
+  world.remove(topLayer.cannonjs);
+  scene.remove(topLayer.threejs);
+
+  gameStarted = false;
+  if (resultsElement) resultsElement.style.display = "flex";
+}
 
 function animation() {
   const speed = 0.15;
 
   const topLayer = stack[stack.length - 1];
+
   topLayer.threejs.position[topLayer.direction] += speed;
   topLayer.cannonjs.position[topLayer.direction] += speed;
 
