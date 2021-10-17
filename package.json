@@ -6,6 +6,7 @@
   "author": "Theodorus Clarence <theodorusclarence@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/cannon": "^0.1.7",
     "@types/three": "^0.133.1"
   }
 }

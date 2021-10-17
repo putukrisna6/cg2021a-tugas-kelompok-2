@@ -4,11 +4,20 @@ let camera;
 let scene;
 /** @type {THREE.WebGLRenderer} */
 let renderer;
+/** @type {CANNON.World} */
+let world;
 
 /** @type {number} */
 const originalBoxSize = 3;
 
 (function init() {
+  // set up cannon.js
+  world = new CANNON.World();
+  world.gravity.set(0, -10, 0);
+  world.broadphase = new CANNON.NaiveBroadphase();
+  world.solver.iterations = 40;
+
+  // set up three.js
   scene = new THREE.Scene();
 
   // Foundation
@@ -68,17 +77,7 @@ window.addEventListener('click', () => {
     const overlap = size - overhangSize;
 
     if (overlap > 0) {
-      // cut layer
-      const newWidth = (direction == 'x') ? overlap : topLayer.width;
-      const newDepth = (direction == 'z') ? overlap : topLayer.depth;
-
-      // update metadata
-      topLayer.width = newWidth;
-      topLayer.depth = newDepth;
-
-      // update layer model
-      topLayer.threejs.scale[direction] = overlap / size;
-      topLayer.threejs.position[direction] -= delta / 2;
+      cutBox(topLayer, overlap, size, delta);
 
       // overhang
       const overhangShift = (overlap / 2 + overhangSize / 2) * Math.sign(delta);
@@ -91,14 +90,16 @@ window.addEventListener('click', () => {
           ? topLayer.threejs.position.z + overhangShift
           : topLayer.threejs.position.z;
       
-      const overhangWidth = (direction === 'x') ? overhangSize : newWidth;
-      const overhangDepth = (direction === 'z') ? overhangSize : newDepth;
+      const overhangWidth = (direction === 'x') ? overhangSize : topLayer.width;
+      const overhangDepth = (direction === 'z') ? overhangSize : topLayer.depth;
 
       addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
 
       // Next Layer
       const nextX = (direction === 'x') ? topLayer.threejs.position.x : -10;
       const nextZ = (direction === 'z') ? topLayer.threejs.position.z : -10;
+      const newWidth = topLayer.width;
+      const newDepth = topLayer.depth;
       const nextDirection = (direction === 'x') ? 'z' : 'x';
 
       addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
@@ -111,11 +112,22 @@ function animation() {
 
   const topLayer = stack[stack.length - 1];
   topLayer.threejs.position[topLayer.direction] += speed;
+  topLayer.cannonjs.position[topLayer.direction] += speed;
 
   //  initial camera height = 4
   if (camera.position.y < boxHeight * (stack.length - 2) + 4) {
     camera.position.y += speed;
   }
 
+  updatePhysics();
   renderer.render(scene, camera);
+}
+
+function updatePhysics() {
+  world.step(1 / 60);
+
+  overhangs.forEach((element) => {
+    element.threejs.position.copy(element.cannonjs.position);
+    element.threejs.quaternion.copy(element.cannonjs.quaternion);
+  });
 }
