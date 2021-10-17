@@ -9,10 +9,13 @@ let world;
 
 /** @type {number} */
 const originalBoxSize = 3;
+
 /** @type {HTMLElement} */
 const scoreElement = document.getElementById("score");
 /** @type {HTMLElement} */
-const resultsElement = document.getElementById("results");
+const gameoverElement = document.getElementById("gameover");
+/** @type {HTMLElement} */
+const welcomeElement = document.getElementById("welcome");
 
 /** @type {boolean} */
 let gameStarted = false;
@@ -123,7 +126,8 @@ function startGame() {
   gameStarted = true;
 
   if (scoreElement) scoreElement.innerText = 0;
-  if (resultsElement) resultsElement.style.display = "none";
+  if (gameoverElement) gameoverElement.style.display = "none";
+  if (welcomeElement) welcomeElement.style.display = "none";
 
   if (world) {
     // Remove every object from world
@@ -166,7 +170,7 @@ function missedTheSpot() {
   scene.remove(topLayer.threejs);
 
   gameStarted = false;
-  if (resultsElement) resultsElement.style.display = "flex";
+  if (gameoverElement) gameoverElement.style.display = "flex";
 }
 
 function animation() {
@@ -174,8 +178,14 @@ function animation() {
 
   const topLayer = stack[stack.length - 1];
 
-  topLayer.threejs.position[topLayer.direction] += speed;
-  topLayer.cannonjs.position[topLayer.direction] += speed;
+  if (gameStarted) {
+    topLayer.threejs.position[topLayer.direction] += speed;
+    topLayer.cannonjs.position[topLayer.direction] += speed;
+
+    if (topLayer.threejs.position[topLayer.direction] > 10) {
+      missedTheSpot();
+    }
+  }
 
   //  initial camera height = 4
   if (camera.position.y < boxHeight * (stack.length - 2) + 4) {
