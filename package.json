@@ -1,0 +1,11 @@
+{
+  "name": "cg2021a-tugas-kelompok-2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/putukrisna6/cg2021a-tugas-kelompok-2.git",
+  "author": "Theodorus Clarence <theodorusclarence@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/three": "^0.133.1"
+  }
+}
