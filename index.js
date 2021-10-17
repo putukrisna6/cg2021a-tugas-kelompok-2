@@ -5,15 +5,16 @@ let scene;
 /** @type {THREE.WebGLRenderer} */
 let renderer;
 
+/** @type {number} */
+const originalBoxSize = 3;
+
 (function init() {
   scene = new THREE.Scene();
 
-  // Add a cube to the scene
-  const geometry = new THREE.BoxGeometry(3, 1, 3);
-  const material = new THREE.MeshLambertMaterial({ color: 0xfb8e00 });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(0, 0, 0);
-  scene.add(mesh);
+  // Foundation
+  addLayer(0, 0, originalBoxSize, originalBoxSize);
+
+  addLayer(-10, 0, originalBoxSize, originalBoxSize, 'x');
 
   // Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -40,6 +41,41 @@ let renderer;
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.render(scene, camera);
-
   document.body.appendChild(renderer.domElement);
 })();
+
+let gameStarted = false;
+window.addEventListener('click', () => {
+  if (!gameStarted) {
+    console.log('start');
+    renderer.setAnimationLoop(animation);
+    gameStarted = true;
+  } else {
+    // Add new box on top
+    const topLayer = stack[stack.length - 1];
+    const direction = topLayer.direction;
+
+    // Next Layer
+    const nextX = direction === 'x' ? 0 : -10;
+    const nextZ = direction === 'z' ? 0 : -10;
+    const newWidth = originalBoxSize;
+    const newDepth = originalBoxSize;
+    const nextDirection = direction === 'x' ? 'z' : 'x';
+
+    addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
+  }
+});
+
+function animation() {
+  const speed = 0.15;
+
+  const topLayer = stack[stack.length - 1];
+  topLayer.threejs.position[topLayer.direction] += speed;
+
+  //  initial camera height = 4
+  if (camera.position.y < boxHeight * (stack.length - 2) + 4) {
+    camera.position.y += speed;
+  }
+
+  renderer.render(scene, camera);
+}
