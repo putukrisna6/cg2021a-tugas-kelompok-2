@@ -72,16 +72,34 @@ window.addEventListener('click', () => {
       const newWidth = (direction == 'x') ? overlap : topLayer.width;
       const newDepth = (direction == 'z') ? overlap : topLayer.depth;
 
+      // update metadata
       topLayer.width = newWidth;
       topLayer.depth = newDepth;
 
+      // update layer model
       topLayer.threejs.scale[direction] = overlap / size;
       topLayer.threejs.position[direction] -= delta / 2;
 
+      // overhang
+      const overhangShift = (overlap / 2 + overhangSize / 2) * Math.sign(delta);
+      const overhangX = 
+        (direction === 'x')
+          ? topLayer.threejs.position.x + overhangShift
+          : topLayer.threejs.position.x;
+      const overhangZ = 
+        (direction === 'z')
+          ? topLayer.threejs.position.z + overhangShift
+          : topLayer.threejs.position.z;
+      
+      const overhangWidth = (direction === 'x') ? overhangSize : newWidth;
+      const overhangDepth = (direction === 'z') ? overhangSize : newDepth;
+
+      addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
+
       // Next Layer
-      const nextX = direction === 'x' ? topLayer.threejs.position.x : -10;
-      const nextZ = direction === 'z' ? topLayer.threejs.position.z : -10;
-      const nextDirection = direction === 'x' ? 'z' : 'x';
+      const nextX = (direction === 'x') ? topLayer.threejs.position.x : -10;
+      const nextZ = (direction === 'z') ? topLayer.threejs.position.z : -10;
+      const nextDirection = (direction === 'x') ? 'z' : 'x';
 
       addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
     }

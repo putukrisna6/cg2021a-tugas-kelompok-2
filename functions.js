@@ -8,6 +8,8 @@
 
 /** @type {Array<Box>} */
 let stack = [];
+/** @type {Array<Box>} */
+let overhangs = [];
 /** @type {number} Height of each layer */
 const boxHeight = 1;
 
@@ -25,6 +27,18 @@ function addLayer(x, z, width, depth, direction) {
   const layer = generateBox(x, y, z, width, depth);
   layer['direction'] = direction;
   stack.push(layer);
+}
+
+/**
+ * @param {number} x x-axis position
+ * @param {number} z z-axis position
+ * @param {number} width width of the box
+ * @param {number} depth depth of the box
+ */
+function addOverhang(x, z, width, depth) {
+  const y = boxHeight * (stack.length - 1);
+  const overhang = generateBox(x, y, z, width, depth);
+  overhangs.push(overhang);
 }
 
 /**
